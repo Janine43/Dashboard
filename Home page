@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gardener Service Dashboard</title>
+  <style>
+    :root {
+      --primary-color: #2e7d32;
+      --secondary-color: #81c784;
+      --accent-color: #ffeb3b;
+      --danger-color: #f44336;
+      --warning-color: #ff9800;
+      --success-color: #4caf50;
+      --text-dark: #212121;
+      --text-light: #fafafa;
+      --background-light: #f5f5f5;
+      --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--background-light);
+      color: var(--text-dark);
+    }
+    
+    .dashboard-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .header {
+      background-color: var(--primary-color);
+      color: var(--text-light);
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .greeting {
+      font-size: 24px;
+      font-weight: bold;
+    }
+    
+    .date-display {
+      font-size: 16px;
+    }
+    
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    
+    .card {
+      background-color: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: var(--card-shadow);
+    }
+    
+    .card-title {
+      color: var(--primary-color);
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      border-bottom: 2px solid var(--secondary-color);
+      padding-bottom: 10px;
+    }
+    
+    .cycle-info {
+      display: flex;
+      gap: 20px;
+    }
+    
+    .info-box {
+      background-color: var(--secondary-color);
+      color: var(--text-dark);
+      border-radius: 6px;
+      padding: 15px;
+      text-align: center;
+      flex: 1;
+    }
+    
+    .info-box.warning {
+      background-color: var(--warning-color);
+    }
+    
+    .info-number {
+      font-size: 36px;
+      font-weight: bold;
+    }
+    
+    .info-label {
+      font-size: 14px;
+    }
+    
+    .property-list {
+      list-style-type: none;
+      padding: 0;
+    }
+    
+    .property-item {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .property-item:last-child {
+      border-bottom: none;
+    }
+    
+    .status-badge {
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    
+    .status-scheduled {
+      background-color: var(--accent-color);
+      color: var(--text-dark);
+    }
+    
+    .status-completed {
+      background-color: var(--success-color);
+      color: var(--text-light);
+    }
+    
+    .status-breach {
+      background-color: var(--danger-color);
+      color: var(--text-light);
+    }
+    
+    .maintenance-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .form-label {
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    
+    .form-input, .form-select, .form-textarea {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-family: inherit;
+    }
+    
+    .form-textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    
+    .submit-button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    
+    .submit-button:hover {
+      background-color: #1b5e20;
+    }
+    
+    .contact-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .contact-item:last-child {
+      border-bottom: none;
+    }
+    
+    .contact-info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .contact-name {
+      font-weight: bold;
+    }
+    
+    .contact-role {
+      font-size: 12px;
+      color: #666;
+    }
+    
+    .contact-number, .contact-email {
+      font-size: 14px;
+    }
+    
+    .breach-alert {
+      color: var(--danger-color);
+      font-weight: bold;
+    }
+    
+    .full-width {
+      grid-column: 1 / -1;
+    }
+    
+    @media (max-width: 768px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .cycle-info {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+  <div class="header">
+    <div class="greeting" id="greeting">Good day, Gardener!</div>
+    <div class="date-display" id="current-date">Loading date...</div>
+  </div>
+  
+  <div class="dashboard-grid">
+    <!-- Daily Schedule -->
+    <div class="card full-width">
+      <div class="card-title">Today's Schedule</div>
+      <ul class="property-list" id="today-schedule">
+        <li class="property-item">
+          <div>123 Oak Lane - Johnson Residence</div>
+          <span class="status-badge status-scheduled">Scheduled</span>
+        </li>
+        <li class="property-item">
+          <div>456 Maple Drive - Smith Property</div>
+          <span class="status-badge status-scheduled">Scheduled</span>
+        </li>
+        <li class="property-item">
+          <div>789 Pine Rd - Green Gardens</div>
+          <span class="status-badge status-scheduled">Scheduled</span>
+        </li>
+      </ul>
+    </div>
+    
+    <!-- Cycle Progress -->
+    <div class="card">
+      <div class="card-title">Cycle Progress</div>
+      <div class="cycle-info">
+        <div class="info-box">
+          <div class="info-number" id="days-left">5</div>
+          <div class="info-label">Days Left in Cycle</div>
+        </div>
+        <div class="info-box">
+          <div class="info-number" id="properties-completed">15</div>
+          <div class="info-label">Properties Completed</div>
+        </div>
+        <div class="info-box">
+          <div class="info-number" id="total-properties">25</div>
+          <div class="info-label">Total Properties</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Work Orders -->
+    <div class="card">
+      <div class="card-title">Work Orders</div>
+      <div class="cycle-info">
+        <div class="info-box">
+          <div class="info-number" id="pending-orders">3</div>
+          <div class="info-label">Pending Orders</div>
+        </div>
+        <div class="info-box warning">
+          <div class="info-number" id="urgent-orders">1</div>
+          <div class="info-label">Urgent Orders</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Maintenance Request Form -->
+    <div class="card full-width">
+      <div class="card-title">Report Maintenance Request</div>
+      <form class="maintenance-form">
+        <div class="form-group">
+          <label class="form-label" for="property-select">Property</label>
+          <select class="form-select" id="property-select" required>
+            <option value="">Select a property</option>
+            <option value="prop1">123 Oak Lane - Johnson Residence</option>
+            <option value="prop2">456 Maple Drive - Smith Property</option>
+            <option value="prop3">789 Pine Rd - Green Gardens</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="issue-type">Issue Type</label>
+          <select class="form-select" id="issue-type" required>
+            <option value="">Select issue type</option>
+            <option value="irrigation">Irrigation System</option>
+            <option value="plant">Plant Health</option>
+            <option value="landscape">Landscape Damage</option>
+            <option value="equipment">Equipment Needed</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="maintenance-description">Description</label>
+          <textarea class="form-textarea" id="maintenance-description" placeholder="Describe the maintenance issue in detail..." required></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="urgency-level">Urgency Level</label>
+          <select class="form-select" id="urgency-level" required>
+            <option value="low">Low - Can wait</option>
+            <option value="medium">Medium - Needs attention this week</option>
+            <option value="high">High - Needs immediate attention</option>
+          </select>
+        </div>
+        <button type="submit" class="submit-button">Submit Request</button>
+      </form>
+    </div>
+    
+    <!-- Breach Warnings -->
+    <div class="card">
+      <div class="card-title">Cycle Breach Warnings</div>
+      <ul class="property-list" id="breach-warnings">
+        <li class="property-item">
+          <div>456 Maple Drive - Smith Property</div>
+          <span class="status-badge status-breach">2 days overdue</span>
+        </li>
+        <li class="property-item">
+          <div>321 Willow Court - Thompson Estate</div>
+          <span class="status-badge status-breach">1 day overdue</span>
+        </li>
+      </ul>
+    </div>
+    
+    <!-- Contacts List -->
+    <div class="card">
+      <div class="card-title">Important Contacts</div>
+      <div class="contact-list">
+        <div class="contact-item">
+          <div class="contact-info">
+            <div class="contact-name">Sarah Johnson</div>
+            <div class="contact-role">Dispatcher</div>
+          </div>
+          <div class="contact-info">
+            <div class="contact-number">555-123-4567</div>
+            <div class="contact-email">sarah.j@gardenco.com</div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-info">
+            <div class="contact-name">Mike Rodriguez</div>
+            <div class="contact-role">Equipment Manager</div>
+          </div>
+          <div class="contact-info">
+            <div class="contact-number">555-789-0123</div>
+            <div class="contact-email">mike.r@gardenco.com</div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-info">
+            <div class="contact-name">Laura Chen</div>
+            <div class="contact-role">Regional Supervisor</div>
+          </div>
+          <div class="contact-info">
+            <div class="contact-number">555-456-7890</div>
+            <div class="contact-email">laura.c@gardenco.com</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Set greeting based on time of day
+  function setGreeting() {
+    const now = new Date();
+    const hour = now.getHours();
+    const greetingElement = document.getElementById('greeting');
+    
+    let greeting = '';
+    if (hour < 12) {
+      greeting = 'Good morning';
+    } else if (hour < 17) {
+      greeting = 'Good afternoon';
+    } else {
+      greeting = 'Good evening';
+    }
+    
+    greetingElement.textContent = `${greeting}, Gardener!`;
+  }
+  
+  // Set current date
+  function setCurrentDate() {
+    const now = new Date();
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const dateString = now.toLocaleDateString('en-US', options);
+    document.getElementById('current-date').textContent = dateString;
+  }
+  
+  // Initialize date and greeting
+  setGreeting();
+  setCurrentDate();
+  
+  // Update every minute to ensure greeting changes appropriately
+  setInterval(() => {
+    setGreeting();
+    setCurrentDate();
+  }, 60000);
+  
+  // Form submission handler
+  document.querySelector('.maintenance-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // In a real implementation, this would send data to a backend
+    alert('Maintenance request submitted successfully!');
+    this.reset();
+  });
+</script>
+</body>
+</html>
